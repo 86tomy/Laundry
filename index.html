@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MSSTech Laundry v6 - Full Features</title>
+    <title>MSSTech Laundry Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -24,7 +24,6 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-        // Auto Load Theme
         window.onload = () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.documentElement.classList.add('dark');
@@ -33,13 +32,14 @@
         };
     </script>
     <style>
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        .card-shadow { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1); }
         input, textarea { font-size: 16px !important; }
+        body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
-    <!-- NAV BAR -->
+    <!-- HEADER -->
     <nav class="bg-blue-800 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
         <div class="font-black text-xl italic tracking-tighter uppercase">MSSTECH <span class="font-light text-blue-300 text-sm">Laundry</span></div>
         <button onclick="toggleDarkMode()" class="p-2 bg-blue-900 rounded-xl active:scale-90 transition">
@@ -47,16 +47,16 @@
         </button>
     </nav>
 
-    <!-- TABS MENU -->
+    <!-- NAVIGATION TABS -->
     <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-[60px] z-40 flex">
         <button onclick="switchTab('input')" id="tab-input" class="tab-btn flex-1 p-4 text-center border-blue-600 text-blue-600 font-black border-b-4 uppercase text-[10px] tracking-widest">INPUT</button>
         <button onclick="switchTab('data')" id="tab-data" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest">AKTIF</button>
         <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest">HISTORY</button>
     </div>
 
-    <main class="max-w-xl mx-auto p-4">
+    <main class="max-w-xl mx-auto p-4 pb-20">
         
-        <!-- SECTION: INPUT -->
+        <!-- SECTION: INPUT FORM -->
         <section id="view-input">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] card-shadow border dark:border-gray-700">
                 <form id="laundryForm" class="space-y-4">
@@ -76,15 +76,15 @@
                     </div>
 
                     <div id="photoGrid" class="flex flex-wrap gap-2 pt-2"></div>
-                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-blue-400 rounded-2xl text-blue-600 font-bold uppercase text-xs">+ Foto Pakaian</button>
+                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-blue-400 rounded-2xl text-blue-600 font-bold uppercase text-xs">+ AMBIL FOTO PAKAIAN</button>
                     <input type="file" id="photoInput" accept="image/*" capture="camera" class="hidden">
 
-                    <button type="submit" id="btnSubmit" class="w-full bg-blue-800 text-white p-5 rounded-3xl font-black text-lg active:scale-95 transition-transform shadow-lg shadow-blue-200 dark:shadow-none">SIMPAN & CETAK</button>
+                    <button type="submit" id="btnSubmit" class="w-full bg-blue-800 text-white p-5 rounded-3xl font-black text-lg active:scale-95 transition-transform shadow-lg shadow-blue-200 dark:shadow-none uppercase">SIMPAN PESANAN</button>
                 </form>
             </div>
         </section>
 
-        <!-- SECTION: DATA AKTIF -->
+        <!-- SECTION: AKTIF -->
         <section id="view-data" style="display: none;">
             <div id="activeList" class="space-y-4">
                 <p class="text-center text-gray-400 py-10 text-xs">Memuat data aktif...</p>
@@ -116,7 +116,7 @@
         const db = getFirestore(app);
         let photoList = [];
 
-        // HANDLER FOTO
+        // FOTO HANDLER
         document.getElementById('photoInput').onchange = (e) => {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -125,7 +125,9 @@
                 img.src = ev.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 400; canvas.height = img.height * (400 / img.width);
+                    const MAX_WIDTH = 400;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * (MAX_WIDTH / img.width);
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     photoList.push(canvas.toDataURL('image/jpeg', 0.6));
                     renderPhotos();
@@ -133,6 +135,7 @@
             };
             reader.readAsDataURL(file);
         };
+
         function renderPhotos() {
             document.getElementById('photoGrid').innerHTML = photoList.map((p, i) => `
                 <div class="relative"><img src="${p}" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500 shadow-sm">
@@ -141,12 +144,12 @@
         }
         window.delPhoto = (i) => { photoList.splice(i,1); renderPhotos(); };
 
-        // SAVE DATA
+        // SIMPAN PESANAN
         document.getElementById('laundryForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             if(photoList.length === 0) return alert("Wajib lampirkan foto!");
-            btn.disabled = true; btn.innerText = "SIMPAN...";
+            btn.disabled = true; btn.innerText = "SEDANG MENYIMPAN...";
 
             const payload = {
                 customerName: document.getElementById('custName').value,
@@ -161,31 +164,30 @@
             };
 
             try {
-                const ref = await addDoc(collection(db, "orders"), payload);
-                window.printInvoice({...payload, id: ref.id, dateStr: new Date().toLocaleString('id-ID')});
+                await addDoc(collection(db, "orders"), payload);
                 e.target.reset(); photoList = []; renderPhotos();
                 switchTab('data');
             } catch (err) { alert("Error: " + err.message); }
-            finally { btn.disabled = false; btn.innerText = "SIMPAN & CETAK"; }
+            finally { btn.disabled = false; btn.innerText = "SIMPAN PESANAN"; }
         };
 
         // REALTIME LISTENER
         const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-        // Tab Aktif (Tanpa filter tanggal agar data lama yang belum selesai tetap muncul)
+        // Listener Data Aktif
         onSnapshot(query(collection(db, "orders"), where("isArchived", "==", 0)), (snap) => {
             const list = document.getElementById('activeList');
-            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 uppercase text-[10px] font-black'>Tidak ada cucian aktif</p>" : "";
+            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 text-[10px] font-black uppercase'>Belum ada cucian aktif</p>" : "";
             const docs = [];
             snap.forEach(s => docs.push({id: s.id, ...s.data()}));
             docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             docs.forEach(d => list.innerHTML += renderCard(d, false));
         });
 
-        // Tab History (Filter bulan berjalan)
+        // Listener History
         onSnapshot(query(collection(db, "orders"), where("isArchived", "==", 1), where("timestamp", ">=", startOfMonth)), (snap) => {
             const list = document.getElementById('historyList');
-            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 uppercase text-[10px] font-black'>Riwayat bulan ini kosong</p>" : "";
+            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 text-[10px] font-black uppercase'>Riwayat bulan ini kosong</p>" : "";
             const docs = [];
             snap.forEach(s => docs.push({id: s.id, ...s.data()}));
             docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
@@ -196,51 +198,68 @@
             const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : 'Baru saja...';
             return `
             <div class="bg-white dark:bg-gray-800 p-5 rounded-[2rem] border dark:border-gray-700 shadow-sm mb-4">
-                <div class="flex justify-between items-start mb-3 border-b dark:border-gray-700 pb-2">
-                    <div><b class="text-blue-700 dark:text-blue-400 uppercase text-xs font-black">${d.customerName}</b><p class="text-[9px] text-gray-400">${tgl}</p></div>
+                <div class="flex justify-between items-start mb-2 border-b dark:border-gray-700 pb-2">
+                    <div><b class="text-blue-700 dark:text-blue-400 uppercase text-xs font-black">${d.customerName}</b><p class="text-[9px] text-gray-400 font-bold">${tgl}</p></div>
                     <div class="text-right font-black text-lg">Rp ${d.totalPrice.toLocaleString()}</div>
                 </div>
-                <div class="text-[10px] text-gray-500 dark:text-gray-400 italic mb-3">📍 ${d.customerAddr || 'Tanpa alamat'}</div>
-                <div class="grid grid-cols-4 gap-2 mb-4">${d.photos.map(p => `<img src="${p}" class="w-full h-16 object-cover rounded-xl shadow-sm">`).join('')}</div>
+                <div class="text-[10px] text-gray-500 dark:text-gray-300 italic mb-3">📍 ${d.customerAddr || 'Tanpa alamat'}</div>
+                <div class="grid grid-cols-4 gap-2 mb-4">${d.photos.map(p => `<img src="${p}" class="w-full h-16 object-cover rounded-xl">`).join('')}</div>
                 <div class="flex gap-2">
-                    <button onclick='window.printInvoice(${JSON.stringify(d)})' class="flex-1 bg-gray-100 dark:bg-gray-700 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Nota</button>
+                    <button onclick='window.printThermal(${JSON.stringify(d)})' class="flex-1 bg-gray-100 dark:bg-gray-700 py-3 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2">🖨️ PRINT</button>
                     ${!isHistory ? `<button onclick="window.selesai('${d.id}')" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-100 dark:shadow-none">Selesai</button>` : ''}
                 </div>
             </div>`;
         }
 
         window.selesai = async (id) => { 
-            if(confirm("Selesaikan pesanan ini?")) await updateDoc(doc(db, "orders", id), {isArchived: 1}); 
+            if(confirm("Pesanan sudah selesai?")) await updateDoc(doc(db, "orders", id), {isArchived: 1}); 
         };
 
-        window.printInvoice = (d) => {
+        // CETAK THERMAL PRINTER
+        window.printThermal = (d) => {
             const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '...';
             const w = window.open('', '_blank');
-            w.document.write(`<html><head><style>
-                body{font-family:'Courier New',monospace;width:140mm;padding:8mm;}
-                .hr{border-bottom:1px dashed #000;margin:8px 0;}
-                .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-                img{width:100%;height:100px;object-fit:cover;border:1px solid #eee;}
-            </style></head>
-            <body>
-                <center><h3>MSSTECH LAUNDRY</h3></center>
-                <div class="hr"></div>
-                <pre style="font-size:12px;">
+            w.document.write(`
+                <html>
+                <head>
+                    <style>
+                        @page { margin: 0; }
+                        body { font-family: 'Courier New', monospace; width: 100%; max-width: 80mm; padding: 5mm; font-size: 12px; }
+                        .text-center { text-align: center; }
+                        .hr { border-bottom: 1px dashed #000; margin: 8px 0; }
+                        .total { font-size: 16px; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold; margin: 10px 0; }
+                        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
+                        .photo-grid img { width: 100%; height: 60px; object-fit: cover; filter: grayscale(100%); }
+                    </style>
+                </head>
+                <body>
+                    <div class="text-center">
+                        <h3 style="margin:0">MSSTECH LAUNDRY</h3>
+                        <p style="font-size:9px">Jl. Raya Merdeka 53, Tangerang</p>
+                    </div>
+                    <div class="hr"></div>
+                    <pre style="white-space: pre-wrap; margin:0;">
+ID  : #${d.id ? d.id.slice(-6).toUpperCase() : 'NEW'}
+TGL : ${tgl}
 PLG : ${d.customerName}
 WA  : ${d.customerPhone}
 ALM : ${d.customerAddr || '-'}
-TGL : ${tgl}
 ---------------------------
 BERAT : ${d.weight} KG
-JUMLAH: ${d.itemQty} PCS
-TOTAL : Rp ${d.totalPrice.toLocaleString()}
----------------------------
-</pre>
-                <div class="grid">${d.photos.map(p=>`<img src="${p}">`).join('')}</div>
-                <div class="hr"></div>
-                <center><p style="font-size:10px;">Terima kasih!</p></center>
-                <script>window.onload=function(){window.print();window.close();}<\/script>
-            </body></html>`);
+QTY   : ${d.itemQty} PCS
+                    </pre>
+                    <div class="total">TOTAL: Rp ${d.totalPrice.toLocaleString()}</div>
+                    <div class="hr"></div>
+                    <p class="text-center" style="font-size:9px">DOKUMENTASI:</p>
+                    <div class="photo-grid">${d.photos.map(p => `<img src="${p}">`).join('')}</div>
+                    <div class="hr"></div>
+                    <p class="text-center" style="font-size:9px">Terima kasih atas kunjungannya!</p>
+                    <br><br>
+                    <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script>
+                </body>
+                </html>
+            `);
+            w.document.close();
         };
     </script>
 </body>
