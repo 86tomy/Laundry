@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MSSTech Laundry Pro</title>
+    <title>Maju Laundry Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { 
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { msstech: { navy: '#0a1d37', gold: '#ffb400', blue: '#1e40af' } }
+                    colors: { 
+                        majulaundry: { 
+                            navy: '#0a1d37', 
+                            gold: '#ffb400', 
+                            blue: '#1e40af',
+                            // Menyesuaikan warna header dengan background putih logo
+                            headerbg: '#ffffff' 
+                        } 
+                    }
                 }
             }
         }
@@ -27,7 +35,7 @@
             filterBar.style.display = (tab === 'input' || tab === 'settings') ? 'none' : 'block';
 
             document.getElementById('view-' + tab).style.display = 'block';
-            document.getElementById('tab-' + tab).className = 'tab-btn flex-1 p-4 text-center border-msstech-gold text-msstech-gold font-black uppercase text-[10px] border-b-4';
+            document.getElementById('tab-' + tab).className = 'tab-btn flex-1 p-4 text-center border-majulaundry-gold text-majulaundry-gold font-black uppercase text-[10px] border-b-4';
             
             if(window.applyFilters) window.applyFilters();
         }
@@ -40,53 +48,76 @@
         }
     </script>
     <style>
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('Maju Laundry Banner.jpeg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
         .card-shadow { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input, textarea { font-size: 16px !important; }
         .archive-card { transition: all 0.2s ease; }
         .archive-card:active { transform: scale(0.98); }
+        .glass-container { backdrop-filter: blur(4px); }
+        
+        .header-logo {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            object-fit: contain;
+        }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+<body class="bg-slate-100/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 min-h-screen">
 
-    <nav class="bg-msstech-navy text-white p-4 sticky top-0 z-50 flex justify-between items-center border-b-2 border-msstech-gold">
-        <div class="font-black text-xl italic uppercase tracking-tighter">MSSTECH <span class="font-light text-msstech-gold text-xs italic">Laundry</span></div>
-        <button onclick="toggleDarkMode()" class="p-2 bg-slate-800 rounded-xl border border-gray-600 active:scale-90 transition">
-            <span id="darkIcon">🌙</span>
-        </button>
+    <nav class="bg-white dark:bg-gray-800 p-2 sticky top-0 z-50 border-b-2 border-majulaundry-gold shadow-lg">
+        <div class="flex flex-col items-center justify-center relative min-h-[80px]">
+            <img src="Maju Laundry Logo(1).jpg" alt="Logo" class="header-logo">
+            <button onclick="toggleDarkMode()" class="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-slate-100 dark:bg-slate-700 rounded-xl border border-gray-300 dark:border-gray-600 active:scale-90 transition">
+                <span id="darkIcon" class="dark:text-white">🌙</span>
+            </button>
+        </div>
     </nav>
 
-    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-[62px] z-40 flex overflow-x-auto no-scrollbar">
-        <button onclick="switchTab('input')" id="tab-input" class="tab-btn flex-1 p-4 text-center border-msstech-gold text-msstech-gold font-black border-b-4 uppercase text-[10px]">INPUT</button>
+    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b dark:border-gray-700 sticky top-[98px] z-40 flex overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('input')" id="tab-input" class="tab-btn flex-1 p-4 text-center border-majulaundry-gold text-majulaundry-gold font-black border-b-4 uppercase text-[10px]">INPUT</button>
         <button onclick="switchTab('data')" id="tab-data" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">AKTIF</button>
         <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">HISTORY</button>
         <button onclick="switchTab('archive')" id="tab-archive" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">ARSIP</button>
         <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">MASTER</button>
     </div>
 
-    <main class="max-w-xl mx-auto p-4 pb-24">
+    <main class="max-w-xl mx-auto p-4 pb-24 relative z-10 glass-container">
         
         <div id="filterBar" class="mb-4 space-y-2" style="display: none;">
             <div class="flex gap-2">
-                <input type="text" id="searchInput" oninput="window.applyFilters()" placeholder="Cari Nama / No HP..." class="flex-1 p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700 outline-none text-sm shadow-sm">
+                <input type="text" id="searchInput" oninput="window.applyFilters()" placeholder="Cari Nama / HP..." class="flex-1 p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700 outline-none text-sm shadow-sm">
                 <input type="date" id="filterDate" onchange="window.applyFilters()" class="p-2 rounded-xl border dark:bg-gray-800 text-xs shadow-sm">
                 <button onclick="window.resetFilter()" class="bg-white dark:bg-gray-800 text-red-500 px-4 rounded-xl border font-bold">✕</button>
             </div>
         </div>
 
         <section id="view-input">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-[2rem] border-t-4 border-msstech-navy card-shadow">
+            <div class="bg-white/95 dark:bg-gray-800/95 p-6 rounded-[2rem] border-t-4 border-majulaundry-navy card-shadow">
                 <form id="laundryForm" class="space-y-4">
-                    <input type="text" id="custName" placeholder="Nama Pelanggan" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none">
-                    <input type="tel" id="custPhone" placeholder="WhatsApp (08...)" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none">
-                    <textarea id="custAddr" placeholder="Alamat Pelanggan" rows="1" class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea>
+                    <input type="text" id="custName" placeholder="Nama Pelanggan" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none">
+                    <input type="tel" id="custPhone" placeholder="Nomor WA" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none">
+                    <textarea id="custAddr" placeholder="Alamat" rows="1" class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none"></textarea>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl border dark:border-gray-600 text-center">
+                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl text-center">
                             <label class="block text-[10px] font-black uppercase opacity-50">Berat (Kg)</label>
                             <input type="number" id="weight" step="0.1" value="0" oninput="calcTotal()" class="bg-transparent text-center font-black text-2xl w-full outline-none">
                         </div>
-                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl border dark:border-gray-600 text-center">
+                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl text-center">
                             <label class="block text-[10px] font-black uppercase opacity-50">Jumlah (Pcs)</label>
                             <input type="number" id="itemQty" value="0" class="bg-transparent text-center font-black text-2xl w-full outline-none">
                         </div>
@@ -97,13 +128,13 @@
                     </div>
 
                     <div id="inputChecklistArea" class="grid grid-cols-2 gap-2"></div>
-                    <textarea id="custNote" placeholder="Catatan Tambahan..." rows="2" class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none"></textarea>
+                    <textarea id="custNote" placeholder="Catatan..." rows="2" class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none"></textarea>
 
                     <div id="photoGrid" class="flex flex-wrap gap-2"></div>
-                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-msstech-navy rounded-2xl text-msstech-navy font-bold text-xs uppercase tracking-widest">+ FOTO</button>
+                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-majulaundry-navy rounded-2xl text-majulaundry-navy font-bold text-xs uppercase tracking-widest">+ FOTO</button>
                     <input type="file" id="photoInput" accept="image/*" capture="camera" class="hidden">
 
-                    <button type="submit" id="btnSubmit" class="w-full bg-msstech-navy text-white p-5 rounded-3xl font-black text-lg shadow-lg uppercase tracking-wider">SIMPAN PESANAN</button>
+                    <button type="submit" id="btnSubmit" class="w-full bg-majulaundry-navy text-white p-5 rounded-3xl font-black text-lg shadow-lg uppercase tracking-wider">SIMPAN PESANAN</button>
                 </form>
             </div>
         </section>
@@ -111,7 +142,7 @@
         <section id="view-data" style="display: none;"><div id="activeList" class="space-y-4"></div></section>
         
         <section id="view-history" style="display: none;">
-            <div class="mb-4"><button onclick="window.archiveCurrentMonth()" class="w-full bg-msstech-gold text-msstech-navy py-4 rounded-2xl text-[10px] font-black shadow-md uppercase tracking-widest">Pindahkan ke Arsip Bulanan</button></div>
+            <div class="mb-4"><button onclick="window.archiveCurrentMonth()" class="w-full bg-majulaundry-gold text-majulaundry-navy py-4 rounded-2xl text-[10px] font-black shadow-md uppercase tracking-widest">Pindahkan ke Arsip Bulanan</button></div>
             <div id="historyList" class="space-y-4"></div>
         </section>
 
@@ -121,10 +152,10 @@
         </section>
 
         <section id="view-settings" style="display: none;">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border-t-4 border-msstech-gold card-shadow">
+            <div class="bg-white/90 dark:bg-gray-800/90 p-6 rounded-2xl border-t-4 border-majulaundry-gold card-shadow">
                 <div class="flex gap-2 mb-6">
                     <input type="text" id="masterInput" placeholder="Nama Layanan..." class="flex-1 p-3 rounded-xl border dark:bg-gray-700 outline-none">
-                    <button onclick="addMasterItem()" class="bg-msstech-navy text-white px-6 rounded-xl font-bold">+</button>
+                    <button onclick="addMasterItem()" class="bg-majulaundry-navy text-white px-6 rounded-xl font-bold">+</button>
                 </div>
                 <div id="masterList" class="space-y-2"></div>
             </div>
@@ -149,26 +180,21 @@
         let allDataCache = [];
         let masterChecklist = JSON.parse(localStorage.getItem('masterChecklist')) || ["Cuci Setrika", "Cuci Kering"];
 
-        // --- FILTER & SEARCH LOGIC ---
         window.applyFilters = () => {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const date = document.getElementById('filterDate').value;
-            const activeTab = document.querySelector('.tab-btn.border-msstech-gold')?.id.replace('tab-', '') || 'data';
+            const activeTab = document.querySelector('.tab-btn.border-majulaundry-gold')?.id.replace('tab-', '') || 'data';
             
             let targetId = "activeList";
             if(activeTab === "history") targetId = "historyList";
             if(activeTab === "archive") targetId = "archiveItems";
 
             const filtered = allDataCache.filter(d => {
-                // Logika Filter Per Menu (Eksklusif)
                 const isActive = (d.status === 'active' || (!d.status && !d.isArchived));
                 const isHistory = (d.status === 'history' || (d.isArchived === 1 && d.status !== 'archived'));
                 const isArchived = (d.status === 'archived');
 
-                const matchTab = (activeTab === 'data' && isActive) || 
-                                 (activeTab === 'history' && isHistory) || 
-                                 (activeTab === 'archive' && isArchived);
-
+                const matchTab = (activeTab === 'data' && isActive) || (activeTab === 'history' && isHistory) || (activeTab === 'archive' && isArchived);
                 const matchSearch = !search || d.customerName?.toLowerCase().includes(search) || d.customerPhone?.includes(search);
                 
                 let matchDate = true;
@@ -181,7 +207,7 @@
 
             const list = document.getElementById(targetId);
             if(list) {
-                list.innerHTML = filtered.length ? "" : "<div class='text-center py-20 opacity-30 font-black uppercase tracking-widest text-xs'>Kosong</div>";
+                list.innerHTML = filtered.length ? "" : "<div class='text-center py-20 opacity-30 font-black uppercase text-xs'>Data Kosong</div>";
                 filtered.forEach(d => list.innerHTML += renderCard(d));
             }
         };
@@ -192,38 +218,83 @@
             window.applyFilters();
         };
 
-        // --- FIREBASE REALTIME ---
         onSnapshot(collection(db, "orders"), (snap) => {
             allDataCache = snap.docs.map(s => ({ id: s.id, ...s.data() })).sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
             window.applyFilters();
             renderArchiveFoldersUI();
         });
 
-        // --- UI COMPONENTS ---
         function renderCard(d) {
             const isHistory = (d.status === 'history' || (d.isArchived === 1 && d.status !== 'archived'));
             const isArchived = (d.status === 'archived');
-            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', {day:'2-digit', month:'short'}) : '...';
+            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) : '...';
+            const dataStr = encodeURIComponent(JSON.stringify(d));
+
             return `
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-[2rem] border-l-8 border-msstech-navy shadow-sm mb-3">
+            <div class="bg-white/95 dark:bg-gray-800/95 p-5 rounded-[2rem] border-l-8 border-majulaundry-navy shadow-sm mb-3">
                 <div class="flex justify-between items-start border-b dark:border-gray-700 pb-3 mb-3">
                     <div>
-                        <b class="text-msstech-navy dark:text-msstech-gold uppercase text-[12px] font-black">${d.customerName}</b>
+                        <b class="text-majulaundry-navy dark:text-majulaundry-gold uppercase text-[12px] font-black">${d.customerName}</b>
                         <p class="text-[10px] text-green-600 font-bold">${d.customerPhone} • ${tgl}</p>
                     </div>
                     <div class="text-right font-black text-sm">Rp ${(d.totalPrice || 0).toLocaleString()}</div>
                 </div>
-                <div class="flex flex-wrap gap-1 mb-2">${(d.selectedItems || []).map(i => `<span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 text-[8px] px-2 py-1 rounded-md font-bold uppercase">✓ ${i}</span>`).join('')}</div>
-                <div class="text-[9px] text-gray-500 italic mb-4 opacity-70">🏠 ${d.customerAddr || '-'} | 📝 ${d.note || '-'}</div>
-                <div class="grid grid-cols-4 gap-1 mb-4">${(d.photos || []).map(p => `<img src="${p}" class="w-full h-12 rounded-xl object-cover border shadow-sm">`).join('')}</div>
+                <div class="flex flex-wrap gap-1 mb-2">${(d.selectedItems || []).map(i => `<span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 text-[8px] px-2 py-1 rounded-md font-bold uppercase tracking-tight">✓ ${i}</span>`).join('')}</div>
+                <div class="text-[9px] text-gray-500 italic mb-4 opacity-70 leading-tight">🏠 ${d.customerAddr || '-'} | 📝 ${d.note || '-'}</div>
+                <div class="grid grid-cols-4 gap-1 mb-4">${(d.photos || []).map(p => `<img src="${p}" class="w-full h-12 rounded-xl object-cover border dark:border-gray-700 shadow-sm">`).join('')}</div>
                 <div class="flex gap-2">
-                    <button onclick='window.printThermal(${JSON.stringify(d)})' class="flex-1 bg-slate-100 dark:bg-gray-700 py-3 rounded-2xl text-[9px] font-black uppercase">Nota</button>
-                    ${(!isHistory && !isArchived) ? `<button onclick="window.updateStatus('${d.id}', 'history')" class="flex-[2] bg-msstech-navy text-white py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest">Selesai</button>` : ''}
-                    ${isHistory ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-gray-200 dark:bg-gray-600 py-3 rounded-2xl text-[9px] font-black uppercase italic">Edit</button>` : ''}
-                    ${isArchived ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-msstech-gold text-msstech-navy py-3 rounded-2xl text-[9px] font-black uppercase">Restore</button>` : ''}
+                    <button onclick="window.printThermal('${dataStr}')" class="flex-1 bg-slate-100 dark:bg-gray-700 py-3 rounded-2xl text-[9px] font-black uppercase flex items-center justify-center gap-1 shadow-sm">
+                        <span>🖨️</span> PRINT NOTA
+                    </button>
+                    ${(!isHistory && !isArchived) ? `<button onclick="window.updateStatus('${d.id}', 'history')" class="flex-[1.5] bg-majulaundry-navy text-white py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest shadow-md">SELESAI</button>` : ''}
+                    ${isHistory ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-gray-200 dark:bg-gray-600 py-3 rounded-2xl text-[9px] font-black uppercase italic shadow-sm">EDIT</button>` : ''}
+                    ${isArchived ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-majulaundry-gold text-majulaundry-navy py-3 rounded-2xl text-[9px] font-black uppercase shadow-sm">RESTORE</button>` : ''}
                 </div>
             </div>`;
         }
+
+        window.printThermal = (dataEncoded) => {
+            const d = JSON.parse(decodeURIComponent(dataEncoded));
+            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-';
+            const w = window.open('', '_blank');
+            w.document.write(`
+                <html>
+                <head>
+                    <style>
+                        body { font-family: 'Courier New', Courier, monospace; width: 58mm; font-size: 10px; padding: 5px; margin: 0; }
+                        .center { text-align: center; }
+                        .hr { border-bottom: 1px dashed #000; margin: 5px 0; }
+                        .bold { font-weight: bold; }
+                        .total { font-size: 14px; font-weight: bold; margin-top: 5px; }
+                        img.receipt-logo { width: 45mm; display: block; margin: 0 auto 5px; }
+                        img.photo { width: 100%; height: 50px; object-fit: cover; margin-top: 2px; }
+                        .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 2px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="center">
+                        <img src="Maju Laundry Logo(1).jpg" class="receipt-logo">
+                        <p style="font-size:8px; margin:2px 0;">Bogor</p>
+                    </div>
+                    <div class="hr"></div>
+                    <p>TGL: ${tgl}<br>NAMA: ${d.customerName}<br>WA  : ${d.customerPhone}</p>
+                    <div class="hr"></div>
+                    <p class="bold">LAYANAN:</p>
+                    <p>${(d.selectedItems || []).join(', ')}</p>
+                    <p>BERAT : ${d.weight} Kg<br>JUMLAH: ${d.itemQty} Pcs</p>
+                    <div class="hr"></div>
+                    <div class="total center text-lg">TOTAL: Rp ${(d.totalPrice || 0).toLocaleString()}</div>
+                    <div class="hr"></div>
+                    <p class="center" style="font-size:8px">DOKUMENTASI:</p>
+                    <div class="grid">${(d.photos || []).map(p => `<img src="${p}" class="photo">`).join('')}</div>
+                    <div class="hr"></div>
+                    <p class="center" style="font-size:8px">Terima kasih atas kepercayaan Anda!</p>
+                    <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script>
+                </body>
+                </html>
+            `);
+            w.document.close();
+        };
 
         function renderArchiveFoldersUI() {
             const archived = allDataCache.filter(d => d.status === 'archived');
@@ -232,20 +303,19 @@
                 acc[m] = (acc[m] || 0) + 1;
                 return acc;
             }, {});
-
             const list = document.getElementById('archiveMonthsList');
             if(!list) return;
             const months = Object.keys(groups).sort().reverse();
             list.innerHTML = months.map(m => `
                 <div onclick="window.toggleFolder('${m}')" class="archive-card bg-white dark:bg-gray-800 p-5 rounded-3xl border-b-4 border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm cursor-pointer">
                     <div class="flex items-center gap-4">
-                        <div class="bg-msstech-navy text-white w-10 h-10 rounded-2xl flex items-center justify-center font-black">📁</div>
+                        <div class="bg-majulaundry-navy text-white w-10 h-10 rounded-2xl flex items-center justify-center font-black">📁</div>
                         <div>
-                            <h4 class="font-black text-xs uppercase">Arsip Bulan ${m}</h4>
-                            <p class="text-[9px] font-bold text-gray-400 uppercase">${groups[m]} Transaksi</p>
+                            <h4 class="font-black text-xs uppercase tracking-wider">Arsip Bulan ${m}</h4>
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${groups[m]} Transaksi</p>
                         </div>
                     </div>
-                    <span id="icon-${m}" class="text-msstech-gold font-black transition-transform">▼</span>
+                    <span id="icon-${m}" class="text-majulaundry-gold font-black transition-transform">▼</span>
                 </div>`).join('');
         }
 
@@ -258,7 +328,7 @@
                 if(icon) icon.style.transform = "rotate(0deg)";
             } else {
                 const filtered = allDataCache.filter(d => d.status === 'archived' && d.monthFolder === m);
-                list.innerHTML = `<div class="flex justify-between items-center mb-4 px-2 font-black text-[10px] uppercase text-msstech-navy dark:text-msstech-gold"><span>Folder: ${m}</span><button onclick="window.toggleFolder('${m}')" class="text-red-500">Tutup X</button></div>`;
+                list.innerHTML = `<div class="flex justify-between items-center mb-4 px-2 font-black text-[10px] uppercase text-majulaundry-navy dark:text-majulaundry-gold"><span>Folder: ${m}</span><button onclick="window.toggleFolder('${m}')" class="text-red-500">Tutup X</button></div>`;
                 filtered.forEach(d => list.innerHTML += renderCard(d));
                 list.setAttribute('data-current-folder', m);
                 if(icon) icon.style.transform = "rotate(180deg)";
@@ -266,28 +336,22 @@
             }
         };
 
-        // --- ACTIONS ---
         window.updateStatus = async (id, newStatus) => {
-            await updateDoc(doc(db, "orders", id), { 
-                status: newStatus, 
-                isArchived: newStatus === 'active' ? 0 : 1 
-            });
+            await updateDoc(doc(db, "orders", id), { status: newStatus, isArchived: newStatus === 'active' ? 0 : 1 });
         };
 
         window.archiveCurrentMonth = async () => {
             const historyData = allDataCache.filter(d => (d.status === 'history' || d.isArchived === 1) && d.status !== 'archived');
             if(historyData.length === 0) return alert("Menu History sudah kosong.");
-            
-            if(!confirm(`Arsipkan ${historyData.length} data? Menu History akan dibersihkan.`)) return;
+            if(!confirm(`Arsipkan ${historyData.length} data?`)) return;
             const batch = writeBatch(db);
             const now = new Date();
             const folder = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-            
             historyData.forEach(d => {
                 batch.update(doc(db, "orders", d.id), { status: 'archived', isArchived: 1, monthFolder: folder });
             });
             await batch.commit();
-            alert("Data berhasil diarsipkan!");
+            alert("Berhasil!");
         };
 
         window.calcTotal = () => {
@@ -299,7 +363,7 @@
         window.addMasterItem = () => { const v = document.getElementById('masterInput').value; if(v){ masterChecklist.push(v); document.getElementById('masterInput').value=""; saveMaster(); } };
         window.deleteMasterItem = (i) => { if(confirm("Hapus?")){ masterChecklist.splice(i,1); saveMaster(); } };
         function renderMasterUI() { document.getElementById('masterList').innerHTML = masterChecklist.map((item, i) => `<div class="flex items-center gap-2 bg-slate-50 dark:bg-gray-700 p-3 rounded-xl border dark:border-gray-600"><span class="flex-1 font-bold text-sm uppercase">${item}</span><button onclick="deleteMasterItem(${i})" class="text-red-500 px-3 font-bold">✕</button></div>`).join(''); }
-        function renderInputChecklistUI() { document.getElementById('inputChecklistArea').innerHTML = masterChecklist.map(item => `<label class="flex items-center gap-2 bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 text-[10px] font-black uppercase cursor-pointer active:bg-slate-100"><input type="checkbox" name="laundry_item" value="${item}" class="w-4 h-4 accent-msstech-navy"> ${item}</label>`).join(''); }
+        function renderInputChecklistUI() { document.getElementById('inputChecklistArea').innerHTML = masterChecklist.map(item => `<label class="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 p-4 rounded-2xl border dark:border-gray-700 text-[10px] font-black uppercase cursor-pointer active:bg-slate-100"><input type="checkbox" name="laundry_item" value="${item}" class="w-4 h-4 accent-majulaundry-navy"> ${item}</label>`).join(''); }
         
         let photoList = [];
         document.getElementById('photoInput').onchange = (e) => {
@@ -317,7 +381,7 @@
             };
             reader.readAsDataURL(file);
         };
-        function renderPhotos() { document.getElementById('photoGrid').innerHTML = photoList.map((p, i) => `<div class="relative"><img src="${p}" class="w-16 h-16 rounded-xl border-2 border-msstech-navy object-cover shadow-sm"></div>`).join(''); }
+        function renderPhotos() { document.getElementById('photoGrid').innerHTML = photoList.map((p, i) => `<div class="relative"><img src="${p}" class="w-16 h-16 rounded-xl border-2 border-majulaundry-navy object-cover shadow-sm"></div>`).join(''); }
 
         document.getElementById('laundryForm').onsubmit = async (e) => {
             e.preventDefault();
@@ -341,13 +405,6 @@
             } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerText = "SIMPAN PESANAN"; }
         };
 
-        window.printThermal = (d) => {
-            const w = window.open('', '_blank');
-            w.document.write(`<html><body style="font-family:monospace;width:58mm;font-size:10px;padding:10px;"><h3>MSSTECH LAUNDRY</h3><p>PLG: ${d.customerName}<br>TOTAL: Rp ${d.totalPrice.toLocaleString()}</p><hr><script>window.print();window.close();<\/script></body></html>`);
-            w.document.close();
-        };
-
-        // Initialize
         renderMasterUI(); 
         renderInputChecklistUI();
         if (localStorage.getItem('theme') === 'dark') {
