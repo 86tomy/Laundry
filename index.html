@@ -3,18 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MSSTech Laundry Management</title>
+    <title>MSSTech Laundry Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class' }
+        tailwind.config = { 
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { msstech: { navy: '#0a1d37', gold: '#ffb400', blue: '#1e40af' } }
+                }
+            }
+        }
 
         function switchTab(tab) {
-            ['input', 'data', 'history'].forEach(t => {
-                document.getElementById('view-' + t).style.display = 'none';
-                document.getElementById('tab-' + t).className = 'tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest';
+            ['input', 'data', 'history', 'archive', 'settings'].forEach(t => {
+                const el = document.getElementById('view-' + t);
+                if(el) el.style.display = 'none';
+                const btn = document.getElementById('tab-' + t);
+                if(btn) btn.className = 'tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]';
             });
+            
+            const filterBar = document.getElementById('filterBar');
+            filterBar.style.display = (tab === 'input' || tab === 'settings') ? 'none' : 'block';
+
             document.getElementById('view-' + tab).style.display = 'block';
-            document.getElementById('tab-' + tab).className = 'tab-btn flex-1 p-4 text-center border-blue-600 text-blue-600 font-black uppercase text-[10px] tracking-widest border-b-4';
+            document.getElementById('tab-' + tab).className = 'tab-btn flex-1 p-4 text-center border-msstech-gold text-msstech-gold font-black uppercase text-[10px] border-b-4';
+            
+            if(window.applyFilters) window.applyFilters();
         }
 
         function toggleDarkMode() {
@@ -23,85 +38,102 @@
             document.getElementById('darkIcon').innerText = isDark ? '☀️' : '🌙';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
-
-        window.onload = () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.documentElement.classList.add('dark');
-                document.getElementById('darkIcon').innerText = '☀️';
-            }
-        };
     </script>
     <style>
         .card-shadow { box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         input, textarea { font-size: 16px !important; }
-        body { -webkit-tap-highlight-color: transparent; }
+        .archive-card { transition: all 0.2s ease; }
+        .archive-card:active { transform: scale(0.98); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+<body class="bg-slate-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
-    <!-- HEADER -->
-    <nav class="bg-blue-800 text-white p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
-        <div class="font-black text-xl italic tracking-tighter uppercase">MSSTECH <span class="font-light text-blue-300 text-sm">Laundry</span></div>
-        <button onclick="toggleDarkMode()" class="p-2 bg-blue-900 rounded-xl active:scale-90 transition">
+    <nav class="bg-msstech-navy text-white p-4 sticky top-0 z-50 flex justify-between items-center border-b-2 border-msstech-gold">
+        <div class="font-black text-xl italic uppercase tracking-tighter">MSSTECH <span class="font-light text-msstech-gold text-xs italic">Laundry</span></div>
+        <button onclick="toggleDarkMode()" class="p-2 bg-slate-800 rounded-xl border border-gray-600 active:scale-90 transition">
             <span id="darkIcon">🌙</span>
         </button>
     </nav>
 
-    <!-- NAVIGATION TABS -->
-    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-[60px] z-40 flex">
-        <button onclick="switchTab('input')" id="tab-input" class="tab-btn flex-1 p-4 text-center border-blue-600 text-blue-600 font-black border-b-4 uppercase text-[10px] tracking-widest">INPUT</button>
-        <button onclick="switchTab('data')" id="tab-data" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest">AKTIF</button>
-        <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest">HISTORY</button>
+    <div class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-[62px] z-40 flex overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('input')" id="tab-input" class="tab-btn flex-1 p-4 text-center border-msstech-gold text-msstech-gold font-black border-b-4 uppercase text-[10px]">INPUT</button>
+        <button onclick="switchTab('data')" id="tab-data" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">AKTIF</button>
+        <button onclick="switchTab('history')" id="tab-history" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">HISTORY</button>
+        <button onclick="switchTab('archive')" id="tab-archive" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">ARSIP</button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn flex-1 p-4 text-center border-transparent text-gray-400 font-bold uppercase text-[10px]">MASTER</button>
     </div>
 
-    <main class="max-w-xl mx-auto p-4 pb-20">
+    <main class="max-w-xl mx-auto p-4 pb-24">
         
-        <!-- SECTION: INPUT FORM -->
+        <div id="filterBar" class="mb-4 space-y-2" style="display: none;">
+            <div class="flex gap-2">
+                <input type="text" id="searchInput" oninput="window.applyFilters()" placeholder="Cari Nama / No HP..." class="flex-1 p-3 rounded-xl border dark:bg-gray-800 dark:border-gray-700 outline-none text-sm shadow-sm">
+                <input type="date" id="filterDate" onchange="window.applyFilters()" class="p-2 rounded-xl border dark:bg-gray-800 text-xs shadow-sm">
+                <button onclick="window.resetFilter()" class="bg-white dark:bg-gray-800 text-red-500 px-4 rounded-xl border font-bold">✕</button>
+            </div>
+        </div>
+
         <section id="view-input">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-[2.5rem] card-shadow border dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-[2rem] border-t-4 border-msstech-navy card-shadow">
                 <form id="laundryForm" class="space-y-4">
-                    <input type="text" id="custName" placeholder="Nama Pelanggan" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 ring-blue-500">
-                    <input type="tel" id="custPhone" placeholder="Nomor WhatsApp" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none">
-                    <textarea id="custAddr" placeholder="Alamat Lengkap" rows="2" class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea>
+                    <input type="text" id="custName" placeholder="Nama Pelanggan" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none">
+                    <input type="tel" id="custPhone" placeholder="WhatsApp (08...)" required class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none">
+                    <textarea id="custAddr" placeholder="Alamat Pelanggan" rows="1" class="w-full p-4 rounded-2xl border dark:bg-gray-700 dark:border-gray-600 outline-none"></textarea>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-2xl border dark:border-gray-600 text-center">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase">Berat (Kg)</label>
-                            <input type="number" id="weight" step="0.1" value="0" required class="bg-transparent text-center font-black text-2xl w-full outline-none">
+                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl border dark:border-gray-600 text-center">
+                            <label class="block text-[10px] font-black uppercase opacity-50">Berat (Kg)</label>
+                            <input type="number" id="weight" step="0.1" value="0" oninput="calcTotal()" class="bg-transparent text-center font-black text-2xl w-full outline-none">
                         </div>
-                        <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-2xl border dark:border-gray-600 text-center">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase">Jumlah (Pcs)</label>
-                            <input type="number" id="itemQty" value="0" required class="bg-transparent text-center font-black text-2xl w-full outline-none">
+                        <div class="bg-slate-50 dark:bg-gray-700 p-3 rounded-2xl border dark:border-gray-600 text-center">
+                            <label class="block text-[10px] font-black uppercase opacity-50">Jumlah (Pcs)</label>
+                            <input type="number" id="itemQty" value="0" class="bg-transparent text-center font-black text-2xl w-full outline-none">
                         </div>
                     </div>
 
-                    <div id="photoGrid" class="flex flex-wrap gap-2 pt-2"></div>
-                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-blue-400 rounded-2xl text-blue-600 font-bold uppercase text-xs">+ AMBIL FOTO PAKAIAN</button>
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800 text-center">
+                        <div id="estTotal" class="font-black text-2xl text-blue-600 dark:text-blue-400">Rp 0</div>
+                    </div>
+
+                    <div id="inputChecklistArea" class="grid grid-cols-2 gap-2"></div>
+                    <textarea id="custNote" placeholder="Catatan Tambahan..." rows="2" class="w-full p-4 rounded-2xl border dark:bg-gray-700 outline-none"></textarea>
+
+                    <div id="photoGrid" class="flex flex-wrap gap-2"></div>
+                    <button type="button" onclick="document.getElementById('photoInput').click()" class="w-full p-4 border-2 border-dashed border-msstech-navy rounded-2xl text-msstech-navy font-bold text-xs uppercase tracking-widest">+ FOTO</button>
                     <input type="file" id="photoInput" accept="image/*" capture="camera" class="hidden">
 
-                    <button type="submit" id="btnSubmit" class="w-full bg-blue-800 text-white p-5 rounded-3xl font-black text-lg active:scale-95 transition-transform shadow-lg shadow-blue-200 dark:shadow-none uppercase">SIMPAN PESANAN</button>
+                    <button type="submit" id="btnSubmit" class="w-full bg-msstech-navy text-white p-5 rounded-3xl font-black text-lg shadow-lg uppercase tracking-wider">SIMPAN PESANAN</button>
                 </form>
             </div>
         </section>
 
-        <!-- SECTION: AKTIF -->
-        <section id="view-data" style="display: none;">
-            <div id="activeList" class="space-y-4">
-                <p class="text-center text-gray-400 py-10 text-xs">Memuat data aktif...</p>
-            </div>
+        <section id="view-data" style="display: none;"><div id="activeList" class="space-y-4"></div></section>
+        
+        <section id="view-history" style="display: none;">
+            <div class="mb-4"><button onclick="window.archiveCurrentMonth()" class="w-full bg-msstech-gold text-msstech-navy py-4 rounded-2xl text-[10px] font-black shadow-md uppercase tracking-widest">Pindahkan ke Arsip Bulanan</button></div>
+            <div id="historyList" class="space-y-4"></div>
         </section>
 
-        <!-- SECTION: HISTORY -->
-        <section id="view-history" style="display: none;">
-            <div id="historyList" class="space-y-4 opacity-75">
-                <p class="text-center text-gray-400 py-10 text-xs">Memuat riwayat bulan ini...</p>
+        <section id="view-archive" style="display: none;">
+            <div class="grid grid-cols-1 gap-3" id="archiveMonthsList"></div>
+            <div id="archiveItems" class="space-y-4 mt-6 border-t-2 border-dashed border-gray-300 dark:border-gray-700 pt-6" data-current-folder=""></div>
+        </section>
+
+        <section id="view-settings" style="display: none;">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl border-t-4 border-msstech-gold card-shadow">
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="masterInput" placeholder="Nama Layanan..." class="flex-1 p-3 rounded-xl border dark:bg-gray-700 outline-none">
+                    <button onclick="addMasterItem()" class="bg-msstech-navy text-white px-6 rounded-xl font-bold">+</button>
+                </div>
+                <div id="masterList" class="space-y-2"></div>
             </div>
         </section>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, doc, updateDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDh67AJsHef2zFpdUQ-mJnMLQA2aGGOJzM",
@@ -114,20 +146,170 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let photoList = [];
+        let allDataCache = [];
+        let masterChecklist = JSON.parse(localStorage.getItem('masterChecklist')) || ["Cuci Setrika", "Cuci Kering"];
 
-        // FOTO HANDLER
+        // --- FILTER & SEARCH LOGIC ---
+        window.applyFilters = () => {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const date = document.getElementById('filterDate').value;
+            const activeTab = document.querySelector('.tab-btn.border-msstech-gold')?.id.replace('tab-', '') || 'data';
+            
+            let targetId = "activeList";
+            if(activeTab === "history") targetId = "historyList";
+            if(activeTab === "archive") targetId = "archiveItems";
+
+            const filtered = allDataCache.filter(d => {
+                // Logika Filter Per Menu (Eksklusif)
+                const isActive = (d.status === 'active' || (!d.status && !d.isArchived));
+                const isHistory = (d.status === 'history' || (d.isArchived === 1 && d.status !== 'archived'));
+                const isArchived = (d.status === 'archived');
+
+                const matchTab = (activeTab === 'data' && isActive) || 
+                                 (activeTab === 'history' && isHistory) || 
+                                 (activeTab === 'archive' && isArchived);
+
+                const matchSearch = !search || d.customerName?.toLowerCase().includes(search) || d.customerPhone?.includes(search);
+                
+                let matchDate = true;
+                if(date && d.timestamp) {
+                    const dDate = new Date(d.timestamp.seconds * 1000).toISOString().split('T')[0];
+                    matchDate = dDate === date;
+                }
+                return matchTab && matchSearch && matchDate;
+            });
+
+            const list = document.getElementById(targetId);
+            if(list) {
+                list.innerHTML = filtered.length ? "" : "<div class='text-center py-20 opacity-30 font-black uppercase tracking-widest text-xs'>Kosong</div>";
+                filtered.forEach(d => list.innerHTML += renderCard(d));
+            }
+        };
+
+        window.resetFilter = () => {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('filterDate').value = "";
+            window.applyFilters();
+        };
+
+        // --- FIREBASE REALTIME ---
+        onSnapshot(collection(db, "orders"), (snap) => {
+            allDataCache = snap.docs.map(s => ({ id: s.id, ...s.data() })).sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+            window.applyFilters();
+            renderArchiveFoldersUI();
+        });
+
+        // --- UI COMPONENTS ---
+        function renderCard(d) {
+            const isHistory = (d.status === 'history' || (d.isArchived === 1 && d.status !== 'archived'));
+            const isArchived = (d.status === 'archived');
+            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', {day:'2-digit', month:'short'}) : '...';
+            return `
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-[2rem] border-l-8 border-msstech-navy shadow-sm mb-3">
+                <div class="flex justify-between items-start border-b dark:border-gray-700 pb-3 mb-3">
+                    <div>
+                        <b class="text-msstech-navy dark:text-msstech-gold uppercase text-[12px] font-black">${d.customerName}</b>
+                        <p class="text-[10px] text-green-600 font-bold">${d.customerPhone} • ${tgl}</p>
+                    </div>
+                    <div class="text-right font-black text-sm">Rp ${(d.totalPrice || 0).toLocaleString()}</div>
+                </div>
+                <div class="flex flex-wrap gap-1 mb-2">${(d.selectedItems || []).map(i => `<span class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 text-[8px] px-2 py-1 rounded-md font-bold uppercase">✓ ${i}</span>`).join('')}</div>
+                <div class="text-[9px] text-gray-500 italic mb-4 opacity-70">🏠 ${d.customerAddr || '-'} | 📝 ${d.note || '-'}</div>
+                <div class="grid grid-cols-4 gap-1 mb-4">${(d.photos || []).map(p => `<img src="${p}" class="w-full h-12 rounded-xl object-cover border shadow-sm">`).join('')}</div>
+                <div class="flex gap-2">
+                    <button onclick='window.printThermal(${JSON.stringify(d)})' class="flex-1 bg-slate-100 dark:bg-gray-700 py-3 rounded-2xl text-[9px] font-black uppercase">Nota</button>
+                    ${(!isHistory && !isArchived) ? `<button onclick="window.updateStatus('${d.id}', 'history')" class="flex-[2] bg-msstech-navy text-white py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest">Selesai</button>` : ''}
+                    ${isHistory ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-gray-200 dark:bg-gray-600 py-3 rounded-2xl text-[9px] font-black uppercase italic">Edit</button>` : ''}
+                    ${isArchived ? `<button onclick="window.updateStatus('${d.id}', 'active')" class="flex-1 bg-msstech-gold text-msstech-navy py-3 rounded-2xl text-[9px] font-black uppercase">Restore</button>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function renderArchiveFoldersUI() {
+            const archived = allDataCache.filter(d => d.status === 'archived');
+            const groups = archived.reduce((acc, d) => {
+                const m = d.monthFolder || 'Lainnya';
+                acc[m] = (acc[m] || 0) + 1;
+                return acc;
+            }, {});
+
+            const list = document.getElementById('archiveMonthsList');
+            if(!list) return;
+            const months = Object.keys(groups).sort().reverse();
+            list.innerHTML = months.map(m => `
+                <div onclick="window.toggleFolder('${m}')" class="archive-card bg-white dark:bg-gray-800 p-5 rounded-3xl border-b-4 border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-msstech-navy text-white w-10 h-10 rounded-2xl flex items-center justify-center font-black">📁</div>
+                        <div>
+                            <h4 class="font-black text-xs uppercase">Arsip Bulan ${m}</h4>
+                            <p class="text-[9px] font-bold text-gray-400 uppercase">${groups[m]} Transaksi</p>
+                        </div>
+                    </div>
+                    <span id="icon-${m}" class="text-msstech-gold font-black transition-transform">▼</span>
+                </div>`).join('');
+        }
+
+        window.toggleFolder = (m) => {
+            const list = document.getElementById('archiveItems');
+            const icon = document.getElementById(`icon-${m}`);
+            if (list.getAttribute('data-current-folder') === m) {
+                list.innerHTML = "";
+                list.setAttribute('data-current-folder', "");
+                if(icon) icon.style.transform = "rotate(0deg)";
+            } else {
+                const filtered = allDataCache.filter(d => d.status === 'archived' && d.monthFolder === m);
+                list.innerHTML = `<div class="flex justify-between items-center mb-4 px-2 font-black text-[10px] uppercase text-msstech-navy dark:text-msstech-gold"><span>Folder: ${m}</span><button onclick="window.toggleFolder('${m}')" class="text-red-500">Tutup X</button></div>`;
+                filtered.forEach(d => list.innerHTML += renderCard(d));
+                list.setAttribute('data-current-folder', m);
+                if(icon) icon.style.transform = "rotate(180deg)";
+                list.scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        // --- ACTIONS ---
+        window.updateStatus = async (id, newStatus) => {
+            await updateDoc(doc(db, "orders", id), { 
+                status: newStatus, 
+                isArchived: newStatus === 'active' ? 0 : 1 
+            });
+        };
+
+        window.archiveCurrentMonth = async () => {
+            const historyData = allDataCache.filter(d => (d.status === 'history' || d.isArchived === 1) && d.status !== 'archived');
+            if(historyData.length === 0) return alert("Menu History sudah kosong.");
+            
+            if(!confirm(`Arsipkan ${historyData.length} data? Menu History akan dibersihkan.`)) return;
+            const batch = writeBatch(db);
+            const now = new Date();
+            const folder = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+            
+            historyData.forEach(d => {
+                batch.update(doc(db, "orders", d.id), { status: 'archived', isArchived: 1, monthFolder: folder });
+            });
+            await batch.commit();
+            alert("Data berhasil diarsipkan!");
+        };
+
+        window.calcTotal = () => {
+            const w = parseFloat(document.getElementById('weight').value) || 0;
+            document.getElementById('estTotal').innerText = "Rp " + (w * 6000).toLocaleString('id-ID');
+        };
+
+        window.saveMaster = () => { localStorage.setItem('masterChecklist', JSON.stringify(masterChecklist)); renderMasterUI(); renderInputChecklistUI(); };
+        window.addMasterItem = () => { const v = document.getElementById('masterInput').value; if(v){ masterChecklist.push(v); document.getElementById('masterInput').value=""; saveMaster(); } };
+        window.deleteMasterItem = (i) => { if(confirm("Hapus?")){ masterChecklist.splice(i,1); saveMaster(); } };
+        function renderMasterUI() { document.getElementById('masterList').innerHTML = masterChecklist.map((item, i) => `<div class="flex items-center gap-2 bg-slate-50 dark:bg-gray-700 p-3 rounded-xl border dark:border-gray-600"><span class="flex-1 font-bold text-sm uppercase">${item}</span><button onclick="deleteMasterItem(${i})" class="text-red-500 px-3 font-bold">✕</button></div>`).join(''); }
+        function renderInputChecklistUI() { document.getElementById('inputChecklistArea').innerHTML = masterChecklist.map(item => `<label class="flex items-center gap-2 bg-white dark:bg-gray-800 p-4 rounded-2xl border dark:border-gray-700 text-[10px] font-black uppercase cursor-pointer active:bg-slate-100"><input type="checkbox" name="laundry_item" value="${item}" class="w-4 h-4 accent-msstech-navy"> ${item}</label>`).join(''); }
+        
+        let photoList = [];
         document.getElementById('photoInput').onchange = (e) => {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = (ev) => {
-                const img = new Image();
-                img.src = ev.target.result;
+                const img = new Image(); img.src = ev.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * (MAX_WIDTH / img.width);
+                    canvas.width = 400; canvas.height = img.height * (400 / img.width);
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                     photoList.push(canvas.toDataURL('image/jpeg', 0.6));
                     renderPhotos();
@@ -135,132 +317,43 @@
             };
             reader.readAsDataURL(file);
         };
+        function renderPhotos() { document.getElementById('photoGrid').innerHTML = photoList.map((p, i) => `<div class="relative"><img src="${p}" class="w-16 h-16 rounded-xl border-2 border-msstech-navy object-cover shadow-sm"></div>`).join(''); }
 
-        function renderPhotos() {
-            document.getElementById('photoGrid').innerHTML = photoList.map((p, i) => `
-                <div class="relative"><img src="${p}" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-500 shadow-sm">
-                <button type="button" onclick="window.delPhoto(${i})" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-[10px]">✕</button></div>
-            `).join('');
-        }
-        window.delPhoto = (i) => { photoList.splice(i,1); renderPhotos(); };
-
-        // SIMPAN PESANAN
         document.getElementById('laundryForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            if(photoList.length === 0) return alert("Wajib lampirkan foto!");
-            btn.disabled = true; btn.innerText = "SEDANG MENYIMPAN...";
-
-            const payload = {
-                customerName: document.getElementById('custName').value,
-                customerPhone: document.getElementById('custPhone').value,
-                customerAddr: document.getElementById('custAddr').value,
-                weight: parseFloat(document.getElementById('weight').value),
-                itemQty: parseInt(document.getElementById('itemQty').value),
-                totalPrice: parseFloat(document.getElementById('weight').value) * 6000,
-                photos: photoList,
-                isArchived: 0,
-                timestamp: serverTimestamp()
-            };
-
+            btn.disabled = true; btn.innerText = "SIMPAN...";
             try {
-                await addDoc(collection(db, "orders"), payload);
-                e.target.reset(); photoList = []; renderPhotos();
-                switchTab('data');
-            } catch (err) { alert("Error: " + err.message); }
-            finally { btn.disabled = false; btn.innerText = "SIMPAN PESANAN"; }
+                await addDoc(collection(db, "orders"), {
+                    customerName: document.getElementById('custName').value,
+                    customerPhone: document.getElementById('custPhone').value,
+                    customerAddr: document.getElementById('custAddr').value,
+                    selectedItems: Array.from(document.querySelectorAll('input[name="laundry_item"]:checked')).map(el => el.value),
+                    weight: parseFloat(document.getElementById('weight').value) || 0,
+                    itemQty: parseInt(document.getElementById('itemQty').value) || 0,
+                    totalPrice: (parseFloat(document.getElementById('weight').value) || 0) * 6000,
+                    photos: photoList,
+                    status: 'active',
+                    isArchived: 0,
+                    timestamp: serverTimestamp()
+                });
+                e.target.reset(); photoList = []; renderPhotos(); switchTab('data');
+            } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.innerText = "SIMPAN PESANAN"; }
         };
 
-        // REALTIME LISTENER
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-
-        // Listener Data Aktif
-        onSnapshot(query(collection(db, "orders"), where("isArchived", "==", 0)), (snap) => {
-            const list = document.getElementById('activeList');
-            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 text-[10px] font-black uppercase'>Belum ada cucian aktif</p>" : "";
-            const docs = [];
-            snap.forEach(s => docs.push({id: s.id, ...s.data()}));
-            docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-            docs.forEach(d => list.innerHTML += renderCard(d, false));
-        });
-
-        // Listener History
-        onSnapshot(query(collection(db, "orders"), where("isArchived", "==", 1), where("timestamp", ">=", startOfMonth)), (snap) => {
-            const list = document.getElementById('historyList');
-            list.innerHTML = snap.empty ? "<p class='text-center py-20 text-gray-400 text-[10px] font-black uppercase'>Riwayat bulan ini kosong</p>" : "";
-            const docs = [];
-            snap.forEach(s => docs.push({id: s.id, ...s.data()}));
-            docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-            docs.forEach(d => list.innerHTML += renderCard(d, true));
-        });
-
-        function renderCard(d, isHistory) {
-            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : 'Baru saja...';
-            return `
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-[2rem] border dark:border-gray-700 shadow-sm mb-4">
-                <div class="flex justify-between items-start mb-2 border-b dark:border-gray-700 pb-2">
-                    <div><b class="text-blue-700 dark:text-blue-400 uppercase text-xs font-black">${d.customerName}</b><p class="text-[9px] text-gray-400 font-bold">${tgl}</p></div>
-                    <div class="text-right font-black text-lg">Rp ${d.totalPrice.toLocaleString()}</div>
-                </div>
-                <div class="text-[10px] text-gray-500 dark:text-gray-300 italic mb-3">📍 ${d.customerAddr || 'Tanpa alamat'}</div>
-                <div class="grid grid-cols-4 gap-2 mb-4">${d.photos.map(p => `<img src="${p}" class="w-full h-16 object-cover rounded-xl">`).join('')}</div>
-                <div class="flex gap-2">
-                    <button onclick='window.printThermal(${JSON.stringify(d)})' class="flex-1 bg-gray-100 dark:bg-gray-700 py-3 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2">🖨️ PRINT</button>
-                    ${!isHistory ? `<button onclick="window.selesai('${d.id}')" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-100 dark:shadow-none">Selesai</button>` : ''}
-                </div>
-            </div>`;
-        }
-
-        window.selesai = async (id) => { 
-            if(confirm("Pesanan sudah selesai?")) await updateDoc(doc(db, "orders", id), {isArchived: 1}); 
-        };
-
-        // CETAK THERMAL PRINTER
         window.printThermal = (d) => {
-            const tgl = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '...';
             const w = window.open('', '_blank');
-            w.document.write(`
-                <html>
-                <head>
-                    <style>
-                        @page { margin: 0; }
-                        body { font-family: 'Courier New', monospace; width: 100%; max-width: 80mm; padding: 5mm; font-size: 12px; }
-                        .text-center { text-align: center; }
-                        .hr { border-bottom: 1px dashed #000; margin: 8px 0; }
-                        .total { font-size: 16px; border: 1px solid #000; padding: 5px; text-align: center; font-weight: bold; margin: 10px 0; }
-                        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
-                        .photo-grid img { width: 100%; height: 60px; object-fit: cover; filter: grayscale(100%); }
-                    </style>
-                </head>
-                <body>
-                    <div class="text-center">
-                        <h3 style="margin:0">MSSTECH LAUNDRY</h3>
-                        <p style="font-size:9px">Jl. Raya Merdeka 53, Tangerang</p>
-                    </div>
-                    <div class="hr"></div>
-                    <pre style="white-space: pre-wrap; margin:0;">
-ID  : #${d.id ? d.id.slice(-6).toUpperCase() : 'NEW'}
-TGL : ${tgl}
-PLG : ${d.customerName}
-WA  : ${d.customerPhone}
-ALM : ${d.customerAddr || '-'}
----------------------------
-BERAT : ${d.weight} KG
-QTY   : ${d.itemQty} PCS
-                    </pre>
-                    <div class="total">TOTAL: Rp ${d.totalPrice.toLocaleString()}</div>
-                    <div class="hr"></div>
-                    <p class="text-center" style="font-size:9px">DOKUMENTASI:</p>
-                    <div class="photo-grid">${d.photos.map(p => `<img src="${p}">`).join('')}</div>
-                    <div class="hr"></div>
-                    <p class="text-center" style="font-size:9px">Terima kasih atas kunjungannya!</p>
-                    <br><br>
-                    <script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script>
-                </body>
-                </html>
-            `);
+            w.document.write(`<html><body style="font-family:monospace;width:58mm;font-size:10px;padding:10px;"><h3>MSSTECH LAUNDRY</h3><p>PLG: ${d.customerName}<br>TOTAL: Rp ${d.totalPrice.toLocaleString()}</p><hr><script>window.print();window.close();<\/script></body></html>`);
             w.document.close();
         };
+
+        // Initialize
+        renderMasterUI(); 
+        renderInputChecklistUI();
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.getElementById('darkIcon').innerText = '☀️';
+        }
     </script>
 </body>
 </html>
